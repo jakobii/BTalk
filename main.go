@@ -1,43 +1,51 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os/exec"
-	"encoding/json"
-	"io"
 )
 
-type Bash struct {
-	Auth    string
-	Command string
+// CmdRequest is te request...
+type CmdRequest struct {
+	Key       string
+	Command   string
 	Arguments []string
 }
 
-func main() {
-	// Hello world, the web server
+// CmdRunner makes the magic happen.
+func CmdRunner(w http.ResponseWriter, req *http.Request) {
 
-	helloHandler := func(w http.ResponseWriter, req *http.Request) {
-		
-		var b Bash
-		err := json.NewDecoder(req.Body).Decode(&b)
-		if err != nil {
-			io.WriteString(w, fmt.Sprint(err))
-		}
-		
-		// authenticate
-		if b.Auth != "Jacob" {
-			io.WriteString(w, "Authentication Error")
-		}
+	//if req.Method != "POST" {
+	//	return
+	//}
 
-		out, err := exec.Command(b.Command,b.Arguments...).Output()
-		if err != nil {
-			io.WriteString(w, fmt.Sprint(err))
-		}
-		io.WriteString(w, string(out))
+	//decode the json payload
+	var Cmd CmdRequest
+	err := json.NewDecoder(req.Body).Decode(&Cmd)
+	if err != nil {
+		io.WriteString(w, fmt.Sprint(err))
 	}
 
-	http.HandleFunc("/bash", helloHandler)
+	// authenticate
+	if Cmd.Key != "088d7646-3e16-11e9-b6e5-af6f2bafb279" {
+		io.WriteString(w, "Authentication Error")
+	}
+
+	// make some coffee..
+	Output, err := exec.Command(Cmd.Command, Cmd.Arguments...).Output()
+	if err != nil {
+		io.WriteString(w, fmt.Sprint(err))
+	}
+
+	// forward output to client
+	io.WriteString(w, string(Output))
+}
+
+func main() {
+	http.HandleFunc("/cmd", CmdRunner)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

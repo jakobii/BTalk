@@ -1,0 +1,7 @@
+{
+    "Key": "088d7646-3e16-11e9-b6e5-af6f2bafb279",
+    "Command": "apt",
+    "Arguments": [
+        "update"
+    ]
+}
