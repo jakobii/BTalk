@@ -1,0 +1,9 @@
+[Unit]
+Description=Btalk
+
+[Service]
+ExecStart=/opt/Btalk/bin/Btalk
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
